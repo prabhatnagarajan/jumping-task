@@ -3,11 +3,10 @@ from setuptools import setup
 
 install_requires = [
     'numpy',
-    # 'scipy',
     'gymnasium',
     'matplotlib',
     'pygame',
-    # 'typing_extensions==4.5.0',
+    'ipython',
     ]
 
 test_requires = [

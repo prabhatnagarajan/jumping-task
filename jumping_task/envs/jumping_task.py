@@ -184,7 +184,7 @@ class JumpTaskEnv(gymnasium.Env):
 
     success = self.scr_w < self.agent_pos_x + self.agent_size[0]
 
-    self.done = bool(failure or success)
+    self.terminated = bool(failure or success)
 
     if self.rendering:
       self.render()
@@ -230,7 +230,7 @@ class JumpTaskEnv(gymnasium.Env):
     self.agent_current_speed = self.agent_speed * JUMP_HORIZONTAL_SPEED
     self.jumping = [False, None]
     self.step_id = 0
-    self.done = False
+    self.terminated = False
     self.floor_height = floor_height
     self.two_obstacles = two_obstacles
     if two_obstacles:
@@ -241,13 +241,13 @@ class JumpTaskEnv(gymnasium.Env):
     if floor_height < self.min_y_position or floor_height >= self.max_y_position:
       raise ValueError('The floor height needs to be in the range [{}, {}]'.format(self.min_y_position, self.max_y_position))
     self.obstacle_position = obstacle_position
-    return self.get_state()
+    return self.get_state(), {}
 
 
   def close(self):
     """Exits the game and closes the rendering.
     """
-    self.done = True
+    self.terminated = True
     if self.rendering:
       pygame.quit()
 
@@ -300,8 +300,8 @@ class JumpTaskEnv(gymnasium.Env):
     reward = -self.agent_pos_x
     if self.step_id > self.max_number_of_steps:
       print('You have reached the maximum number of steps.')
-      self.done = True
-      return self.get_state(), 0., self.done, {}
+      self.terminated = True
+      return self.get_state(), 0., self.terminated, {}
     elif action not in self.legal_actions:
       raise ValueError(
           'We did not recognize that action. '
@@ -335,7 +335,7 @@ class JumpTaskEnv(gymnasium.Env):
     elif exited:
       reward += self.rewards['exit']
     self.step_id += 1
-    return self.get_state(), reward, self.done, {'collision': killed}
+    return self.get_state(), reward, self.terminated, False, {'collision': killed}
 
   def render(self):
     """Render the screen game using pygame.
@@ -382,7 +382,7 @@ def test(args):
                     max_number_of_steps=args.max_number_of_steps, two_obstacles=args.two_obstacles, finish_jump=args.finish_jump)
   env.render()
   score = 0
-  while not env.done:
+  while not env.terminated:
     action = None
     if env.jumping[0] and env.finish_jump:
       action = 3
@@ -405,7 +405,7 @@ def test(args):
     elif action == 'unknown':
       print('We did not recognize that action. Please use the arrows to move the agent or the \'e\' key to exit.')
       continue
-    _, r, term, _ = env.step(action)
+    _, r, term, _, _ = env.step(action)
     env.render()
     score += r
     print('Agent position: {:2d} | Reward: {:2d} | Terminal: {}'.format(

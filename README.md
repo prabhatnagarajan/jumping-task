@@ -8,13 +8,20 @@
 ### Description
 The `jumping-task` environment is an extremely simple video game consisting of a black background, a floor and two rectangles. The grey rectangle starts on the left of the screen and can be moved with two actions, "Right" and "Jump". The goal of the game is to reach the right of the screen while avoiding the white obstacle. There is only one specific distance (measured in number of pixels) to the obstacle where the agent has to chose the action "Jump" in order to pass over the obstacle. If jumping is chosen at any other point, the agent will inevitably crash into the obstacle. A reward of +1 is granted anytime the agent moves one pixel to the right (even in the air). The episode terminates if the agent reaches the right of the screen or touches the obstacle.
 
+### Setup
+1. Clone the repository
+2. Inside the repository directory, run an install.
+```
+pip install .
+```
+
 ### Import as a gym environment
 
 You can create the jumping-task environment using the following commands:
 
   ```
-  import gym
-  import gym_jumping_task
+  import gymnasium as gym
+  import jumping_task
   env = gym.make('jumping-task-v0')
   ```
 
@@ -23,7 +30,7 @@ You can create the jumping-task environment using the following commands:
 To play the game yourself, simply run:
 
   ```
-  ipython jumping_task.py
+  ipython jumping_task/envs/jumping_task.py
   ```
 
 and use the arrows to control the agent. Check below for more game options (different obstacle locations, two obstacles...).

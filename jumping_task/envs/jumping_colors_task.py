@@ -95,16 +95,16 @@ class JumpTaskEnvWithColors(jumping_task.JumpTaskEnv):
   def _game_status(self):
     collided, success = super()._game_status()
     if self._obstacle_color == COLORS.GREEN:
-      self.done = bool(success)
+      self.terminated = bool(success)
       collided = (not self._already_collided) and collided
     else:
-      self.done = (collided or success)
+      self.terminated = (collided or success)
     self._already_collided = self._already_collided or collided
     return collided, success
 
   def step(self, action):
-    state, reward, done, info = super().step(action)
+    state, reward, terminated, truncated, info = super().step(action)
     if (self.agent_pos_y == self.floor_height) and info['collision']:
       reward += self.rewards['collision']
-    return state, reward, done, info
+    return state, reward, terminated, truncated, info
 
