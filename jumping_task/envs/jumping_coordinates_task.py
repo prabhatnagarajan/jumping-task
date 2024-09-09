@@ -26,11 +26,10 @@
 
 from __future__ import absolute_import
 from __future__ import division
-from __future__ import google_type_annotations
 from __future__ import print_function
 
-from gym import spaces
-from gym_jumping_task.envs import jumping_task
+from gymnasium import spaces
+from jumping_task.envs import jumping_task
 import numpy as np
 
 LEFT = jumping_task.LEFT
