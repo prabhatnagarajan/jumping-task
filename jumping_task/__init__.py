@@ -23,23 +23,23 @@
 # SOFTWARE.
 """Jumping task."""
 
-from gym.envs.registration import register, registry
-from gym_jumping_task.envs import COLORS
+from gymnasium.envs.registration import register, registry
+from jumping_task.envs import COLORS
 
 register(
     id='jumping-task-v0',
-    entry_point='gym_jumping_task.envs:JumpTaskEnv',
+    entry_point='jumping_task.envs:JumpTaskEnv',
     max_episode_steps=600
 )
 
 register(
     id='jumping-coordinates-task-v0',
-    entry_point='gym_jumping_task.envs:JumpTaskEnvWithCoordinates',
+    entry_point='jumping_task.envs:JumpTaskEnvWithCoordinates',
     max_episode_steps=600
 )
 
 register(
     id='jumping-colors-task-v0',
-    entry_point='gym_jumping_task.envs:JumpTaskEnvWithColors',
+    entry_point='jumping_task.envs:JumpTaskEnvWithColors',
     max_episode_steps=600
 )

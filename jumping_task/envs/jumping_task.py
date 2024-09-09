@@ -26,10 +26,10 @@
 from __future__ import print_function
 
 import argparse
-import gym
+import gymnasium
 import pygame
-from gym import spaces
-from gym.utils import seeding
+from gymnasium import spaces
+from gymnasium.utils import seeding
 import numpy as np
 import time
 
@@ -71,7 +71,7 @@ DOWN = 0
 UP = 41
 ###############################################
 
-class JumpTaskEnv(gym.Env):
+class JumpTaskEnv(gymnasium.Env):
 
   def __init__(self,
                seed=42,
