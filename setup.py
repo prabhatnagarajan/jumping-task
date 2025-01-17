@@ -19,8 +19,6 @@ setup(
     version='0.1',
     description='Jumping Task Gymnasium',
     keywords='Jumping Task, Deep RL',
-    author='Prabhat Nagarajan',
-    author_email='nagarajan@ualberta.ca',
     packages=find_packages(),
     install_requires=install_requires,
     test_requires=test_requires
