@@ -48,7 +48,6 @@ GREYSCALE_GREY = 0.5
 # The jump shape is a `hat`:
 # - diagonal going up until the jump height
 # - then diagonal going down
-JUMP_HEIGHT = 15
 JUMP_VERTICAL_SPEED = 1
 JUMP_HORIZONTAL_SPEED = 1
 ###############################################
@@ -62,8 +61,6 @@ JUMP_HORIZONTAL_SPEED = 1
 OBSTACLE_1 = 20
 OBSTACLE_2 = 55
 # These are the 6 random positions used in the paper.
-ALLOWED_OBSTACLE_X = [20, 30, 40]
-ALLOWED_OBSTACLE_Y = [10, 20]
 # Max and min positions
 LEFT = 14
 RIGHT = 48
@@ -77,7 +74,8 @@ class JumpTaskEnv(gymnasium.Env):
                seed=42,
                scr_w=60,
                scr_h=60,
-               floor_height=10,
+               floor_height_options=[10, 20],
+               obstacle_locations=[20, 30, 40],
                agent_w=5,
                agent_h=10,
                agent_init_pos=0,
@@ -91,13 +89,14 @@ class JumpTaskEnv(gymnasium.Env):
                max_number_of_steps=600,
                two_obstacles=False,
                finish_jump=False,
-               use_colors=False):
+               use_colors=False,
+               jump_height=15):
     """Environment for the jumping task.
 
     Args:
       scr_w: screen width, by default 60 pixels
       scr_h: screen height, by default 60 pixels
-      floor_height: the height of the floor in pixels, by default 10 pixels
+      floor_height_options: the heights of the floor in pixels, by default 10 pixels
       agent_w: agent width, by default 5 pixels
       agent_h: agent height, by default 10 pixels
       agent_init_pos: initial x position of the agent (on the floor), defaults
@@ -156,6 +155,9 @@ class JumpTaskEnv(gymnasium.Env):
     self.finish_jump = finish_jump
     self.two_obstacles = two_obstacles
 
+    self.floor_height_options = floor_height_options
+    self.obstacle_locations = obstacle_locations
+
     # Min and max positions of the obstacle
     self.min_x_position = LEFT
     self.max_x_position = RIGHT
@@ -165,6 +167,8 @@ class JumpTaskEnv(gymnasium.Env):
     # Define gym env objects
     self.observation_space = spaces.Box(low=0, high=1, shape=(self.state_shape))
     self.action_space = spaces.Discrete(self.nb_actions)
+
+    self.jump_height = jump_height
 
     self.reset()
 
@@ -200,7 +204,7 @@ class JumpTaskEnv(gymnasium.Env):
     Needs to be called at each discrete step of the jump
     """
     self.agent_pos_x = np.max([self.agent_pos_x + self.agent_current_speed, 0])
-    if self.agent_pos_y > self.floor_height + JUMP_HEIGHT:
+    if self.agent_pos_y > self.floor_height + self.jump_height:
       self.jumping[1] = "down"
     if self.jumping[1] == "up":
       self.agent_pos_y += self.agent_speed * JUMP_VERTICAL_SPEED
@@ -214,8 +218,8 @@ class JumpTaskEnv(gymnasium.Env):
     To be called at the beginning of each episode for training as in the paper.
     Sets the obstacle at one of six random positions.
     """
-    obstacle_position = self.np_random.choice(ALLOWED_OBSTACLE_X)
-    floor_height = self.np_random.choice(ALLOWED_OBSTACLE_Y)
+    obstacle_position = self.np_random.choice(self.obstacle_locations)
+    floor_height = self.np_random.choice(self.floor_height_options)
     return self._reset(obstacle_position, floor_height, self.two_obstacles)
 
   def _reset(self, obstacle_position=30, floor_height=10, two_obstacles=False):
@@ -379,11 +383,31 @@ class JumpTaskEnv(gymnasium.Env):
     pygame.display.flip()
 
 def test(args):
-  env = JumpTaskEnv(scr_w=args.scr_w, scr_h=args.scr_h, floor_height=args.floor_height,
-                    agent_w=args.agent_w, agent_h=args.agent_h, agent_init_pos=args.agent_init_pos, agent_speed=args.agent_speed,
-                    obstacle_position=args.obstacle_position, obstacle_size=args.obstacle_size,
-                    rendering=True, zoom=args.zoom, slow_motion=True, with_left_action=args.with_left_action,
-                    max_number_of_steps=args.max_number_of_steps, two_obstacles=args.two_obstacles, finish_jump=args.finish_jump)
+  # env = JumpTaskEnv(scr_w=args.scr_w, scr_h=args.scr_h, floor_height=args.floor_height,
+  #                   agent_w=args.agent_w, agent_h=args.agent_h, agent_init_pos=args.agent_init_pos, agent_speed=args.agent_speed,
+  #                   obstacle_position=args.obstacle_position, obstacle_size=args.obstacle_size,
+  #                   rendering=True, zoom=args.zoom, slow_motion=True, with_left_action=args.with_left_action,
+  #                   max_number_of_steps=args.max_number_of_steps, two_obstacles=args.two_obstacles, finish_jump=args.finish_jump)
+
+  # env = JumpTaskEnv(scr_w=60, scr_h=60, floor_height_options=[10, 20], obstacle_locations=[20, 30, 40],
+  #                   agent_w=5, agent_h=10, agent_init_pos=0, agent_speed=1,
+  #                   obstacle_position=0, obstacle_size=(9,10),
+  #                   rendering=True, zoom=8, slow_motion=True, with_left_action=True,
+  #                   max_number_of_steps=300, two_obstacles=False, finish_jump=False)
+
+  # env = JumpTaskEnv(scr_w=60, scr_h=60, floor_height_options=[10, 20], obstacle_locations=[30, 40],
+  #                   agent_w=7, agent_h=7, agent_init_pos=0, agent_speed=1,
+  #                   obstacle_position=0, obstacle_size=(11,17),
+  #                   rendering=True, zoom=8, slow_motion=True, with_left_action=True,
+  #                   max_number_of_steps=300, two_obstacles=False, finish_jump=False,
+  #                   jump_height=24)
+
+  env = JumpTaskEnv(scr_w=60, scr_h=60, floor_height_options=[10, 20], obstacle_locations=[20, 30, 40],
+                    agent_w=5, agent_h=10, agent_init_pos=0, agent_speed=1,
+                    obstacle_position=0, obstacle_size=(9,10),
+                    rendering=True, zoom=8, slow_motion=True, with_left_action=True,
+                    max_number_of_steps=300, two_obstacles=True, finish_jump=False)
+
   env.render()
   score = 0
   while not env.terminated:
@@ -451,5 +475,17 @@ if __name__ == '__main__':
   parser.add_argument('--finish_jump', action='store_true', help='flag, if present: perform a full jump when the jump action is selected. ' +
                       'Otherwise an action needs to be selected as usual, by default False')
   args = parser.parse_args()
+
+  env1 = JumpTaskEnv(scr_w=60, scr_h=60, floor_height_options=[10,20],
+                    agent_w=5, agent_h=10, agent_init_pos=0, agent_speed=1,
+                    obstacle_position=0, obstacle_size=(9,10),
+                    rendering=True, zoom=8, slow_motion=True, with_left_action=True,
+                    max_number_of_steps=300, two_obstacles=False, finish_jump=False)
+
+  # env1 = JumpTaskEnv(scr_w=60, scr_h=60, floor_height=10,
+  #                   agent_w=5, agent_h=10, agent_init_pos=0, agent_speed=1,
+  #                   obstacle_position=0, obstacle_size=(9,10),
+  #                   rendering=True, zoom=8, slow_motion=True, with_left_action=True,
+  #                   max_number_of_steps=300, two_obstacles=args.two_obstacles, finish_jump=args.finish_jump)
 
   test(args)
