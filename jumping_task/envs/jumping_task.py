@@ -154,6 +154,7 @@ class JumpTaskEnv(gymnasium.Env):
     self.slow_motion = slow_motion
     self.max_number_of_steps = max_number_of_steps
     self.finish_jump = finish_jump
+    self.two_obstacles = two_obstacles
 
     # Min and max positions of the obstacle
     self.min_x_position = LEFT
@@ -185,6 +186,7 @@ class JumpTaskEnv(gymnasium.Env):
     success = self.scr_w < self.agent_pos_x + self.agent_size[0]
 
     self.terminated = bool(failure or success)
+    self.truncated = self.step_id > self.max_number_of_steps
 
     if self.rendering:
       self.render()
@@ -207,14 +209,14 @@ class JumpTaskEnv(gymnasium.Env):
       if self.agent_pos_y == self.floor_height:
         self.jumping[0] = False
 
-  def reset(self, ):
+  def reset(self,):
     """Resets the game.
     To be called at the beginning of each episode for training as in the paper.
     Sets the obstacle at one of six random positions.
     """
     obstacle_position = self.np_random.choice(ALLOWED_OBSTACLE_X)
     floor_height = self.np_random.choice(ALLOWED_OBSTACLE_Y)
-    return self._reset(obstacle_position, floor_height)
+    return self._reset(obstacle_position, floor_height, self.two_obstacles)
 
   def _reset(self, obstacle_position=30, floor_height=10, two_obstacles=False):
     """Resets the game.
@@ -231,6 +233,7 @@ class JumpTaskEnv(gymnasium.Env):
     self.jumping = [False, None]
     self.step_id = 0
     self.terminated = False
+    self.truncated = False
     self.floor_height = floor_height
     self.two_obstacles = two_obstacles
     if two_obstacles:
@@ -300,8 +303,9 @@ class JumpTaskEnv(gymnasium.Env):
     reward = -self.agent_pos_x
     if self.step_id > self.max_number_of_steps:
       print('You have reached the maximum number of steps.')
-      self.terminated = True
-      return self.get_state(), 0., self.terminated, {}
+      self.terminated = False
+      self.truncated = True
+      return self.get_state(), 0., self.terminated, self.truncated, {}
     elif action not in self.legal_actions:
       raise ValueError(
           'We did not recognize that action. '
@@ -335,7 +339,7 @@ class JumpTaskEnv(gymnasium.Env):
     elif exited:
       reward += self.rewards['exit']
     self.step_id += 1
-    return self.get_state(), reward, self.terminated, False, {'collision': killed}
+    return self.get_state(), reward, self.terminated, self.truncated, {'collision': killed}
 
   def render(self):
     """Render the screen game using pygame.
@@ -405,13 +409,13 @@ def test(args):
     elif action == 'unknown':
       print('We did not recognize that action. Please use the arrows to move the agent or the \'e\' key to exit.')
       continue
-    _, r, term, _, _ = env.step(action)
+    _, r, term, trunc, _ = env.step(action)
     env.render()
     score += r
-    print('Agent position: {:2d} | Reward: {:2d} | Terminal: {}'.format(
-        env.agent_pos_x, r, term))
+    print('Agent position: {:2f} | Reward: {:2f} | Terminal: {} | Truncate: {}'.format(
+        env.agent_pos_x, r, term, trunc))
   print('---------------')
-  print('Final score: {:2d}'.format(int(score)))
+  print('Final score: {:2f}'.format(int(score)))
   print('---------------')
 
 
