@@ -241,7 +241,7 @@ class JumpTaskEnv(gymnasium.Env):
     self.floor_height = floor_height
     self.two_obstacles = two_obstacles
     if two_obstacles:
-      return self.get_state()
+      return self.get_state(), {}
 
     if obstacle_position < self.min_x_position or obstacle_position >= self.max_x_position:
       raise ValueError('The obstacle x position needs to be in the range [{}, {}]'.format(self.min_x_position, self.max_x_position))
